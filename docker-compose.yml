@@ -1,0 +1,61 @@
+# Healthcare Autopilot — Local Development Stack
+# Usage: docker-compose up -d
+
+version: "3.9"
+
+services:
+  # ---- Backend API (FastAPI) ----
+  api:
+    build: .
+    container_name: healthcare-autopilot-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY}
+      - QWEN_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+      - RDS_CONNECTION_STRING=postgresql://healthcare:healthcare@postgres:5432/healthcare
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---- PostgreSQL (simulates Alibaba Cloud RDS) ----
+  postgres:
+    image: postgres:15-alpine
+    container_name: healthcare-autopilot-db
+    environment:
+      POSTGRES_DB: healthcare
+      POSTGRES_USER: healthcare
+      POSTGRES_PASSWORD: healthcare
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U healthcare"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---- Redis (simulates Alibaba Cloud Tair) ----
+  redis:
+    image: redis:7-alpine
+    container_name: healthcare-autopilot-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

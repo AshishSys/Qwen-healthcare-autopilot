@@ -1,0 +1,12 @@
+# Healthcare Autopilot Backend
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+openai>=1.6.0
+pydantic>=2.5.0
+python-dotenv>=1.0.0
+pyyaml>=6.0
+redis>=5.0.0
+psycopg2-binary>=2.9.0
+oss2>=2.18.0  # Alibaba Cloud OSS SDK
+dashscope>=1.14.0  # Alibaba Cloud DashScope SDK
+httpx>=0.25.0

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Autopilot — Agent Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', -apple-system, sans-serif; }
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .workflow-step { transition: all 0.3s ease; }
+        .workflow-step.active { transform: scale(1.05); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3); }
+        .workflow-step.completed { border-color: #10b981; background: #ecfdf5; }
+        .slide-in { animation: slideIn 0.4s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        .agent-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .agent-card { transition: all 0.2s ease; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Top Nav -->
+    <nav class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl">🏥</span>
+            <h1 class="text-lg font-semibold text-gray-800">Healthcare Autopilot</h1>
+            <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium">Powered by Qwen Cloud</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></span>
+                <span class="text-sm text-gray-600">All agents online</span>
+            </div>
+            <span class="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+                <i class="fa-solid fa-cloud"></i> Alibaba Cloud
+            </span>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 py-6">
+        
+        <!-- Stats Row -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                <div class="text-sm text-gray-500 mb-1">Active Workflows</div>
+                <div class="text-2xl font-bold text-gray-800" id="stat-active">3</div>
+                <div class="text-xs text-green-600 mt-1"><i class="fa-solid fa-arrow-up"></i> 12% from yesterday</div>
+            </div>
+            <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                <div class="text-sm text-gray-500 mb-1">Completed Today</div>
+                <div class="text-2xl font-bold text-gray-800" id="stat-completed">47</div>
+                <div class="text-xs text-green-600 mt-1"><i class="fa-solid fa-check"></i> 94% success rate</div>
+            </div>
+            <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                <div class="text-sm text-gray-500 mb-1">Avg Completion Time</div>
+                <div class="text-2xl font-bold text-gray-800">1.8 min</div>
+                <div class="text-xs text-blue-600 mt-1"><i class="fa-solid fa-bolt"></i> vs 45 min manual</div>
+            </div>
+            <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                <div class="text-sm text-gray-500 mb-1">Escalations</div>
+                <div class="text-2xl font-bold text-gray-800">2</div>
+                <div class="text-xs text-amber-600 mt-1"><i class="fa-solid fa-exclamation-triangle"></i> Pending review</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-3 gap-6">
+            
+            <!-- Left: Agent Status Cards -->
+            <div class="col-span-1 space-y-4">
+                <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Agents</h2>
+                
+                <div class="agent-card bg-white rounded-xl p-4 border border-gray-100 shadow-sm cursor-pointer" onclick="selectAgent('triage')">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🔄</span>
+                            <span class="font-medium text-gray-800">Triage Agent</span>
+                        </div>
+                        <span class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></span>
+                    </div>
+                    <div class="text-xs text-gray-500">Symptoms → Risk → Department → Schedule</div>
+                    <div class="mt-2 flex items-center gap-2">
+                        <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">qwen-max</span>
+                        <span class="text-xs text-gray-400">6 tools</span>
+                    </div>
+                </div>
+
+                <div class="agent-card bg-white rounded-xl p-4 border border-gray-100 shadow-sm cursor-pointer" onclick="selectAgent('lab')">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🧪</span>
+                            <span class="font-medium text-gray-800">Lab Processor</span>
+                        </div>
+                        <span class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></span>
+                    </div>
+                    <div class="text-xs text-gray-500">Parse → Flag → Compare → Interpret → Alert</div>
+                    <div class="mt-2 flex items-center gap-2">
+                        <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">qwen-max</span>
+                        <span class="text-xs text-gray-400">7 tools</span>
+                    </div>
+                </div>
+
+                <div class="agent-card bg-white rounded-xl p-4 border border-gray-100 shadow-sm cursor-pointer" onclick="selectAgent('auth')">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">📄</span>
+                            <span class="font-medium text-gray-800">Prior Auth Agent</span>
+                        </div>
+                        <span class="w-2 h-2 bg-yellow-500 rounded-full pulse-dot"></span>
+                    </div>
+                    <div class="text-xs text-gray-500">Evidence → Submit → Track → Appeal</div>
+                    <div class="mt-2 flex items-center gap-2">
+                        <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">qwen-max</span>
+                        <span class="text-xs text-gray-400">7 tools</span>
+                    </div>
+                </div>
+
+                <div class="agent-card bg-white rounded-xl p-4 border border-gray-100 shadow-sm cursor-pointer" onclick="selectAgent('care')">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">📋</span>
+                            <span class="font-medium text-gray-800">Care Plan Agent</span>
+                        </div>
+                        <span class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></span>
+                    </div>
+                    <div class="text-xs text-gray-500">Guidelines → Interactions → Coverage → Plan</div>
+                    <div class="mt-2 flex items-center gap-2">
+                        <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">qwen-max</span>
+                        <span class="text-xs text-gray-400">6 tools</span>
+                    </div>
+                </div>
+
+                <div class="agent-card bg-white rounded-xl p-4 border border-gray-100 shadow-sm cursor-pointer" onclick="selectAgent('discharge')">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🏠</span>
+                            <span class="font-medium text-gray-800">Discharge Agent</span>
+                        </div>
+                        <span class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></span>
+                    </div>
+                    <div class="text-xs text-gray-500">Instructions → Reminders → Check-ins → Monitor</div>
+                    <div class="mt-2 flex items-center gap-2">
+                        <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">qwen-plus</span>
+                        <span class="text-xs text-gray-400">7 tools</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center: Active Workflow Visualization -->
+            <div class="col-span-2">
+                <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Live Workflow</h2>
+                
+                <!-- Triage Workflow Demo -->
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6" id="workflow-panel">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="font-semibold text-gray-800" id="wf-title">🔄 Triage Workflow — Patient #A7F2</h3>
+                            <p class="text-xs text-gray-500 mt-1" id="wf-subtitle">Initiated 45 seconds ago • Using qwen-max</p>
+                        </div>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium" id="wf-status">In Progress</span>
+                    </div>
+
+                    <!-- Workflow Steps -->
+                    <div class="space-y-3" id="workflow-steps">
+                        <div class="workflow-step completed rounded-lg border border-green-200 p-3 flex items-center gap-3">
+                            <span class="w-7 h-7 bg-green-500 text-white rounded-full flex items-center justify-center text-xs"><i class="fa-solid fa-check"></i></span>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-gray-700">check_red_flags</div>
+                                <div class="text-xs text-gray-500">No immediate red flags detected</div>
+                            </div>
+                            <span class="text-xs text-gray-400">0.8s</span>
+                        </div>
+
+                        <div class="workflow-step completed rounded-lg border border-green-200 p-3 flex items-center gap-3">
+                            <span class="w-7 h-7 bg-green-500 text-white rounded-full flex items-center justify-center text-xs"><i class="fa-solid fa-check"></i></span>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-gray-700">assess_clinical_risk</div>
+                                <div class="text-xs text-gray-500">Risk score: 85/200 • Urgency: semi_urgent • Confidence: 0.82</div>
+                            </div>
+                            <span class="text-xs text-gray-400">1.2s</span>
+                        </div>
+
+                        <div class="workflow-step completed rounded-lg border border-green-200 p-3 flex items-center gap-3">
+                            <span class="w-7 h-7 bg-green-500 text-white rounded-full flex items-center justify-center text-xs"><i class="fa-solid fa-check"></i></span>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-gray-700">route_to_department</div>
+                                <div class="text-xs text-gray-500">Routed to: Neurology (headache + nausea + light sensitivity)</div>
+                            </div>
+                            <span class="text-xs text-gray-400">0.6s</span>
+                        </div>
+
+                        <div class="workflow-step active rounded-lg border border-indigo-300 bg-indigo-50 p-3 flex items-center gap-3">
+                            <span class="w-7 h-7 bg-indigo-500 text-white rounded-full flex items-center justify-center text-xs pulse-dot"><i class="fa-solid fa-gear fa-spin"></i></span>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-gray-700">schedule_appointment</div>
+                                <div class="text-xs text-indigo-600">Scheduling with Neurology within 24-48 hours...</div>
+                            </div>
+                            <span class="text-xs text-indigo-500">running</span>
+                        </div>
+
+                        <div class="workflow-step rounded-lg border border-gray-200 p-3 flex items-center gap-3 opacity-50">
+                            <span class="w-7 h-7 bg-gray-200 text-gray-400 rounded-full flex items-center justify-center text-xs">5</span>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium text-gray-400">send_patient_notification</div>
+                                <div class="text-xs text-gray-400">Waiting...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Qwen Reasoning Panel -->
+                    <div class="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-100">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-medium">🧠 Qwen-max Reasoning</span>
+                        </div>
+                        <div class="text-xs text-gray-600 font-mono leading-relaxed" id="reasoning-panel">
+                            Based on risk score 85/200 (semi_urgent) and symptom match for neurology 
+                            (headache + nausea + photophobia + neck stiffness), I'm scheduling within 
+                            the 24-48 hour window. Confidence at 0.82 exceeds the 0.7 threshold — 
+                            proceeding autonomously without escalation. The neck stiffness warrants 
+                            neurological evaluation but does not meet emergency criteria without 
+                            fever or altered consciousness.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Log -->
+                <div class="mt-4 bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                    <h3 class="text-sm font-semibold text-gray-600 mb-3">Recent Activity</h3>
+                    <div class="space-y-2 text-xs" id="activity-log">
+                        <div class="flex items-center gap-2 text-gray-600 slide-in">
+                            <span class="text-green-500"><i class="fa-solid fa-circle-check"></i></span>
+                            <span class="text-gray-400 w-12">7:47</span>
+                            <span>Triage completed — Patient #B3C1 → Cardiology (urgent)</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-gray-600 slide-in">
+                            <span class="text-blue-500"><i class="fa-solid fa-flask"></i></span>
+                            <span class="text-gray-400 w-12">7:46</span>
+                            <span>Lab results processed — Patient #D4E2: HbA1c 7.8% (above target)</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-gray-600 slide-in">
+                            <span class="text-amber-500"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                            <span class="text-gray-400 w-12">7:45</span>
+                            <span>Escalation — Patient #F5G3: Low confidence (0.58) on triage → sent to Dr. Patel</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-gray-600 slide-in">
+                            <span class="text-green-500"><i class="fa-solid fa-file-medical"></i></span>
+                            <span class="text-gray-400 w-12">7:44</span>
+                            <span>Prior auth approved — Patient #H6I4: Knee replacement (AUTH-BCBS-20260708)</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-gray-600 slide-in">
+                            <span class="text-purple-500"><i class="fa-solid fa-clipboard-list"></i></span>
+                            <span class="text-gray-400 w-12">7:42</span>
+                            <span>Care plan generated — Patient #J7K5: Type 2 Diabetes management (3 goals)</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-gray-600 slide-in">
+                            <span class="text-teal-500"><i class="fa-solid fa-house-medical-circle-check"></i></span>
+                            <span class="text-gray-400 w-12">7:40</span>
+                            <span>Discharge completed — Patient #L8M6: Instructions delivered, 4 check-ins scheduled</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Simulation Script -->
+    <script>
+    // Simulated workflow progression for demo
+    let step = 3; // Currently on step 4 (0-indexed)
+    
+    function completeCurrentStep() {
+        const steps = document.querySelectorAll('.workflow-step');
+        if (step < steps.length) {
+            // Complete current
+            steps[step].classList.remove('active');
+            steps[step].classList.add('completed');
+            steps[step].style.borderColor = '#86efac';
+            steps[step].style.background = '#ecfdf5';
+            const icon = steps[step].querySelector('span:first-child');
+            icon.className = 'w-7 h-7 bg-green-500 text-white rounded-full flex items-center justify-center text-xs';
+            icon.innerHTML = '<i class="fa-solid fa-check"></i>';
+            
+            // Update subtitle
+            const subtitle = steps[step].querySelector('.text-xs:not(.text-gray-400)');
+            if (step === 3) subtitle.textContent = 'Appointment scheduled: Neurology, July 10 at 10:30 AM';
+            
+            // Add timing
+            const timing = steps[step].querySelector('.text-xs:last-child');
+            timing.textContent = '1.4s';
+            timing.className = 'text-xs text-gray-400';
+            
+            step++;
+            
+            // Activate next step
+            if (step < steps.length) {
+                setTimeout(() => {
+                    steps[step].style.opacity = '1';
+                    steps[step].classList.add('active');
+                    steps[step].style.borderColor = '#a5b4fc';
+                    steps[step].style.background = '#eef2ff';
+                    const nextIcon = steps[step].querySelector('span:first-child');
+                    nextIcon.className = 'w-7 h-7 bg-indigo-500 text-white rounded-full flex items-center justify-center text-xs pulse-dot';
+                    nextIcon.innerHTML = '<i class="fa-solid fa-gear fa-spin"></i>';
+                    const nextSubtitle = steps[step].querySelector('.text-xs');
+                    if (nextSubtitle) nextSubtitle.textContent = 'Sending SMS + email confirmation to patient...';
+                    
+                    // Update reasoning
+                    document.getElementById('reasoning-panel').textContent = 
+                        'Appointment confirmed with Neurology. Now sending patient notification via SMS ' +
+                        'and email with: appointment details, preparation instructions (bring imaging if available), ' +
+                        'and warning signs that would warrant going to the ER before the appointment.';
+                }, 500);
+            }
+            
+            // Final completion
+            if (step >= steps.length) {
+                document.getElementById('wf-status').textContent = 'Completed';
+                document.getElementById('wf-status').className = 'px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium';
+                document.getElementById('reasoning-panel').textContent = 
+                    'Workflow complete. Patient #A7F2 triaged as semi_urgent → Neurology. ' +
+                    'Appointment Jul 10, 10:30 AM. Patient notified via SMS and email. ' +
+                    'Total time: 4.0s | Tokens: 1,847 | Model: qwen-max | No escalation needed.';
+            }
+        }
+    }
+    
+    // Auto-progress for demo
+    setTimeout(completeCurrentStep, 3000);
+    setTimeout(completeCurrentStep, 6000);
+    
+    // Agent selection
+    function selectAgent(agent) {
+        const titles = {
+            triage: '🔄 Triage Workflow — Patient #A7F2',
+            lab: '🧪 Lab Processing — Patient #D4E2 (CMP Panel)',
+            auth: '📄 Prior Authorization — Patient #H6I4 (Knee Replacement)',
+            care: '📋 Care Plan — Patient #J7K5 (Type 2 Diabetes)',
+            discharge: '🏠 Discharge — Patient #L8M6 (Post-appendectomy)',
+        };
+        document.getElementById('wf-title').textContent = titles[agent] || titles.triage;
+    }
+    
+    // Increment stats periodically
+    setInterval(() => {
+        const completed = document.getElementById('stat-completed');
+        completed.textContent = parseInt(completed.textContent) + 1;
+    }, 15000);
+    </script>
+</body>
+</html>

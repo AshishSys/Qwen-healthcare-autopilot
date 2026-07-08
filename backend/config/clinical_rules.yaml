@@ -1,0 +1,114 @@
+# Clinical Triage Configuration
+# Healthcare Autopilot — Rule Engine
+
+# Escalation thresholds
+escalation:
+  confidence_threshold: 0.7
+  max_agent_iterations: 8
+  timeout_seconds: 120
+  
+# Urgency-to-timing mapping
+urgency_windows:
+  emergency:
+    max_wait_minutes: 0
+    department: emergency_department
+    notification: immediate
+  urgent:
+    max_wait_minutes: 240  # 4 hours
+    notification: within_15_min
+  semi_urgent:
+    max_wait_hours: 48
+    notification: within_1_hour
+  routine:
+    max_wait_days: 7
+    notification: same_day
+  preventive:
+    max_wait_days: 30
+    notification: next_business_day
+
+# Red flag keywords requiring immediate escalation
+red_flags:
+  immediate_escalation:
+    - "chest pain with radiating to arm"
+    - "sudden severe headache (worst of life)"
+    - "loss of consciousness"
+    - "inability to breathe"
+    - "uncontrolled bleeding"
+    - "signs of stroke (FAST)"
+    - "anaphylaxis symptoms"
+    - "suicidal ideation"
+    - "seizure (first occurrence)"
+  
+  urgent_review:
+    - "high fever with rash"
+    - "severe abdominal pain"
+    - "head injury with confusion"
+    - "chest pain (any)"
+    - "sudden vision loss"
+    - "pregnant with bleeding"
+
+# Department routing rules
+department_routing:
+  cardiac_symptoms:
+    keywords: ["chest pain", "palpitations", "shortness of breath with exertion"]
+    department: cardiology
+    
+  neurological_symptoms:
+    keywords: ["headache", "dizziness", "numbness", "tingling", "seizure", "memory loss"]
+    department: neurology
+    
+  musculoskeletal:
+    keywords: ["joint pain", "back pain", "fracture", "sprain", "mobility"]
+    department: orthopedics
+    
+  gastrointestinal:
+    keywords: ["nausea", "vomiting", "abdominal pain", "diarrhea", "blood in stool"]
+    department: gastroenterology
+    
+  respiratory:
+    keywords: ["cough", "wheezing", "shortness of breath", "congestion"]
+    department: pulmonology
+    
+  mental_health:
+    keywords: ["anxiety", "depression", "insomnia", "panic", "mood changes"]
+    department: psychiatry
+    dual_route: true  # Also route to primary care
+
+# Vital sign thresholds
+vital_sign_thresholds:
+  heart_rate:
+    critical_low: 40
+    low: 50
+    high: 120
+    critical_high: 150
+  
+  blood_pressure_systolic:
+    critical_low: 80
+    low: 90
+    high: 160
+    critical_high: 180
+  
+  temperature_fahrenheit:
+    critical_low: 94
+    low: 96
+    high: 101.3
+    critical_high: 104
+    
+  spo2:
+    critical_low: 88
+    low: 92
+    normal: 95
+    
+  respiratory_rate:
+    low: 10
+    high: 24
+    critical_high: 30
+
+# Model configuration
+models:
+  triage_assessment: qwen-max
+  patient_communication: qwen-plus
+  simple_routing: qwen-turbo
+  document_analysis: qwen-long
+  temperature: 0.1
+  max_tokens: 4096
