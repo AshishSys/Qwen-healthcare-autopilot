@@ -2,7 +2,7 @@
 
 **Autonomous AI Agent for Healthcare Workflow Automation**
 
-> Built with **Qwen Cloud** (Alibaba Cloud Model Studio) for the Global AI Hackathon
+> Built with **Qwen Cloud** for the Global AI Hackathon
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Alibaba Cloud](https://img.shields.io/badge/Deployed%20on-Alibaba%20Cloud-FF6A00)](https://www.alibabacloud.com)
